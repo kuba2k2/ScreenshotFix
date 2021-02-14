@@ -79,5 +79,18 @@ class FrameworkHook : IXposedHookLoadPackage {
                     screenshotTaken = thisScreenshotType == defaultScreenshotType
                 }
             })
+
+        /* hook StitchImageUtility to enable Asus screenshots in app launchers */
+        findAndHookMethod(
+            "com.android.internal.custom.screenshot.StitchImageUtility",
+            lpparam.classLoader,
+            "isPackageAllowed",
+            String::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val focusedPackageName = param.args[0] as? String ?: return
+                    param.result = focusedPackageName != "com.android.systemui"
+                }
+            })
     }
 }
