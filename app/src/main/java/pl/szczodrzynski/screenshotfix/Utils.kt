@@ -2,6 +2,7 @@ package pl.szczodrzynski.screenshotfix
 
 import android.app.ActivityManager
 import android.app.AndroidAppHelper
+import android.app.KeyguardManager
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
@@ -12,11 +13,11 @@ object Utils {
     const val TAKE_SCREENSHOT_FULLSCREEN = 1
     const val TAKE_SCREENSHOT_SELECTED_REGION = 2
 
-    val appNameRegex by lazy {
+    private val appNameRegex by lazy {
         "[\\\\/:*?\"<>|\\s]+".toRegex()
     }
 
-    fun getScreenshotFormat(classLoader: ClassLoader): Int? {
+    fun getAsusScreenshotFormat(classLoader: ClassLoader): Int? {
         val screenshotClass = XposedHelpers.findClass("com.asus.stitchimage.j.g", classLoader)
         return XposedHelpers.callStaticMethod(
             screenshotClass,
@@ -27,7 +28,7 @@ object Utils {
     }
 
     /* https://github.com/ResurrectionRemix/android_frameworks_base/blob/Q/packages/SystemUI/src/com/android/systemui/screenshot/GlobalScreenshot.java#L183 */
-    fun getRunningActivityName(context: Context): CharSequence? {
+    private fun getRunningActivityName(context: Context): CharSequence? {
         val am = context.getSystemService(ActivityManager::class.java)
         val pm = context.packageManager
         val tasks = am.getRunningTasks(1)
@@ -41,5 +42,28 @@ object Utils {
             }
         }
         return null
+    }
+
+    /* https://github.com/ResurrectionRemix/android_frameworks_base/blob/Q/packages/SystemUI/src/com/android/systemui/screenshot/GlobalScreenshot.java#L207 */
+    fun getScreenshotFilename(context: Context, imageDate: String, extension: String): String {
+        val appName = getRunningActivityName(context)
+        val onKeyguard =
+            context.getSystemService(KeyguardManager::class.java).isKeyguardLocked
+
+        return if (!onKeyguard && appName != null) {
+            val appNameString = appName.toString().replace(appNameRegex, "_")
+            String.format(
+                "Screenshot_%s_%s.%s",
+                imageDate,
+                appNameString,
+                extension
+            )
+        } else {
+            String.format(
+                "Screenshot_%s.%s",
+                imageDate,
+                extension
+            )
+        }
     }
 }
