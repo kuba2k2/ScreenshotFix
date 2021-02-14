@@ -9,6 +9,9 @@ import de.robv.android.xposed.XposedHelpers
 
 object Utils {
 
+    const val TAKE_SCREENSHOT_FULLSCREEN = 1
+    const val TAKE_SCREENSHOT_SELECTED_REGION = 2
+
     val appNameRegex by lazy {
         "[\\\\/:*?\"<>|\\s]+".toRegex()
     }

@@ -22,3 +22,5 @@
 
 -keep class pl.szczodrzynski.screenshotfix.StitchImageHook
 -keepnames class pl.szczodrzynski.screenshotfix.StitchImageHook
+-keep class pl.szczodrzynski.screenshotfix.FrameworkHook
+-keepnames class pl.szczodrzynski.screenshotfix.FrameworkHook
